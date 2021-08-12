@@ -9,7 +9,7 @@ env:
   cache-name: postgres-migrations
 
 jobs:
-  build:
+  test-and-publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -30,5 +30,4 @@ jobs:
             ${{ runner.os }}-
       - run: npm ci
       - run: docker pull postgres:13.2
-      - run: npm test
       - run: npm publish
