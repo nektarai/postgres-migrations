@@ -1,5 +1,5 @@
 {
-  "name": "postgres-migrations",
+  "name": "@nektarai/postgres-migrations",
   "version": "5.3.1",
   "description": "Stack Overflow style database migrations for PostgreSQL",
   "main": "dist/index.js",
@@ -7,7 +7,7 @@
   "bin": {
     "pg-validate-migrations": "./dist/bin/validate.js"
   },
-  "author": "Thom Wright",
+  "author": "Nektar AI<developers@nektar.ai>",
   "keywords": [
     "postgres",
     "postgresql",
@@ -17,14 +17,14 @@
     "database",
     "db"
   ],
-  "homepage": "https://github.com/thomwright/postgres-migrations#readme",
+  "homepage": "https://github.com/nektarai/postgres-migrations#readme",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git@github.com:thomwright/postgres-migrations.git"
+    "url": "git://github.com/nektarai/postgres-migrations.git"
   },
   "bugs": {
-    "url": "https://github.com/thomwright/postgres-migrations/issues"
+    "url": "https://github.com/nektarai/postgres-migrations/issues"
   },
   "engines": {
     "node": ">10.17.0"
@@ -67,5 +67,8 @@
     "tslint-config-prettier": "^1.18.0",
     "typescript": "^4.3.4",
     "typescript-tslint-plugin": "^1.0.1"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }
