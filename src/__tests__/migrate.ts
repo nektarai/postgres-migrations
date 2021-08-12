@@ -3,6 +3,7 @@ import test from "ava"
 import * as pg from "pg"
 import SQL from "sql-template-strings"
 import {createDb, migrate, MigrateDBConfig} from "../"
+import {loadInitialMigration} from "../initial-migration"
 import {PASSWORD, startPostgres, stopPostgres} from "./fixtures/docker-postgres"
 
 const CONTAINER_NAME = "pg-migrations-test-migrate"
@@ -757,7 +758,13 @@ test("with custom migration table name in a custom schema with same table name i
 
   try {
     await createDb(databaseName, dbConfig)
-    await pool.query(require("./fixtures/success-existing-table/restore.sql"))
+    await pool.query(`
+  CREATE SCHEMA IF NOT EXISTS existing_schema;
+
+  CREATE TABLE existing_schema.migrations (
+    id integer
+  );
+    `)
     await migrate(dbConfig, "src/__tests__/fixtures/success-existing-table")
     t.truthy(await doesTableExist(dbConfig, "success"))
   } finally {
@@ -779,11 +786,12 @@ test("successful migration on an existing database", async (t) => {
 
   try {
     await createDb(databaseName, dbConfig)
-    await pool.query(require("./fixtures/success-existing-db/restore.sql"))
-    await migrate(
-      dbConfig,
-      "src/__tests__/fixtures/success-existing-db/migrations",
-    )
+    const initSql = await loadInitialMigration("migrations")
+    await pool.query(`
+      ${initSql.sql}
+      INSERT INTO migrations ("id","name","hash","executed_at") VALUES (${initSql.id},'${initSql.fileName}','${initSql.hash}','2020-06-29 18:38:05.064546');
+    `)
+    await migrate(dbConfig, "src/__tests__/fixtures/success-existing-db")
     t.truthy(await doesTableExist(dbConfig, "success"))
   } finally {
     await pool.end()
