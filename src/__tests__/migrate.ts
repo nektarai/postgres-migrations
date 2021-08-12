@@ -688,35 +688,134 @@ test("rollback", (t) => {
     })
 })
 
+test("with custom migration table name", async (t) => {
+  const databaseName = "migration-test-custom-migration-table"
+  const dbConfig = {
+    database: databaseName,
+    user: "postgres",
+    password: PASSWORD,
+    host: "localhost",
+    port,
+  }
+
+  const migrateWithCustomMigrationTable = () =>
+    migrate(dbConfig, "src/__tests__/fixtures/success-first", {
+      migrationTableName: "my_migrations",
+    })
+
+  await createDb(databaseName, dbConfig)
+  await migrateWithCustomMigrationTable()
+
+  t.truthy(await doesTableExist(dbConfig, "my_migrations"))
+  t.truthy(await doesTableExist(dbConfig, "success"))
+
+  await migrateWithCustomMigrationTable()
+})
+
+test("with custom migration table name in a custom schema", async (t) => {
+  const databaseName = "migration-test-custom-schema-custom-migration-table"
+  const dbConfig = {
+    database: databaseName,
+    user: "postgres",
+    password: PASSWORD,
+    host: "localhost",
+    port,
+  }
+
+  const migrateWithCustomMigrationTable = () =>
+    migrate(dbConfig, "src/__tests__/fixtures/success-first", {
+      migrationTableName: "my_schema.my_migrations",
+    })
+
+  const pool = new pg.Pool(dbConfig)
+
+  try {
+    await createDb(databaseName, dbConfig)
+    await pool.query("CREATE SCHEMA IF NOT EXISTS my_schema")
+    await migrateWithCustomMigrationTable()
+
+    t.truthy(await doesTableExist(dbConfig, "my_schema.my_migrations"))
+    t.truthy(await doesTableExist(dbConfig, "success"))
+
+    await migrateWithCustomMigrationTable()
+  } finally {
+    await pool.end()
+  }
+})
+
+test("with custom migration table name in a custom schema with same table name in another schema", async (t) => {
+  const databaseName = "migration-test-success-existing-table"
+  const dbConfig = {
+    database: databaseName,
+    user: "postgres",
+    password: PASSWORD,
+    host: "localhost",
+    port,
+  }
+
+  const pool = new pg.Pool(dbConfig)
+
+  try {
+    await createDb(databaseName, dbConfig)
+    await pool.query(require("./fixtures/success-existing-table/restore.sql"))
+    await migrate(dbConfig, "src/__tests__/fixtures/success-existing-table")
+    t.truthy(await doesTableExist(dbConfig, "success"))
+  } finally {
+    await pool.end()
+  }
+})
+
+test("successful migration on an existing database", async (t) => {
+  const databaseName = "migration-test-success-existing-db"
+  const dbConfig = {
+    database: databaseName,
+    user: "postgres",
+    password: PASSWORD,
+    host: "localhost",
+    port,
+  }
+
+  const pool = new pg.Pool(dbConfig)
+
+  try {
+    await createDb(databaseName, dbConfig)
+    await pool.query(require("./fixtures/success-existing-db/restore.sql"))
+    await migrate(
+      dbConfig,
+      "src/__tests__/fixtures/success-existing-db/migrations",
+    )
+    t.truthy(await doesTableExist(dbConfig, "success"))
+  } finally {
+    await pool.end()
+  }
+})
+
 function doesTableExist(dbConfig: pg.ClientConfig, tableName: string) {
   const client = new pg.Client(dbConfig)
   client.on("error", (err) => console.log("doesTableExist on error", err))
   return client
     .connect()
     .then(() =>
-      client.query(SQL`
-        SELECT EXISTS (
-          SELECT 1
-          FROM   pg_catalog.pg_class c
-          WHERE  c.relname = ${tableName}
-          AND    c.relkind = 'r'
-        );
-      `),
+      client.query(SQL`SELECT to_regclass(${tableName}) as matching_tables;`),
     )
     .then((result) => {
       try {
         return client
           .end()
           .then(() => {
-            return result.rows.length > 0 && result.rows[0].exists
+            return (
+              result.rows.length > 0 && result.rows[0].matching_tables !== null
+            )
           })
           .catch((error) => {
             console.log("Async error in 'doesTableExist", error)
-            return result.rows.length > 0 && result.rows[0].exists
+            return (
+              result.rows.length > 0 && result.rows[0].matching_tables !== null
+            )
           })
       } catch (error) {
         console.log("Sync error in 'doesTableExist", error)
-        return result.rows.length > 0 && result.rows[0].exists
+        return result.rows.length > 0 && result.rows[0].matching_tables !== null
       }
     })
 }

@@ -68,7 +68,7 @@ async function() {
   const client = new pg.Client(dbConfig) // or a Pool, or a PoolClient
   await client.connect()
   try {
-    await migrate({client}, "path/to/migration/files")
+    await migrate({client}, "path/to/migration/files", { migrationTableName: "my_schema.migrations" })
   } finally {
     await client.end()
   }
