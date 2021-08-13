@@ -31,8 +31,5 @@ jobs:
       - run: npm ci
       - run: docker pull postgres:13.2
       - env:
-          NPM_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # NPM_GITHUB_TOKEN should have access to: write-package
-          echo "//npm.pkg.github.com/:_authToken=$NPM_GITHUB_TOKEN" >> ./.npmrc
-          npm publish
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish
