@@ -30,4 +30,9 @@ jobs:
             ${{ runner.os }}-
       - run: npm ci
       - run: docker pull postgres:13.2
-      - run: npm publish
+      - env:
+          NPM_GITHUB_TOKEN: ${{ secrets.NPM_GITHUB_TOKEN }}
+        run: |
+          # NPM_GITHUB_TOKEN should have access to: write-package
+          echo "//npm.pkg.github.com/:_authToken=$NPM_GITHUB_TOKEN" >> ./.npmrc
+          npm publish
