@@ -55,7 +55,7 @@ export const startPostgres = (containerName: string, t: CbExecutionContext) => {
       --health-interval=1s \
       --health-retries=30 \
       --health-timeout=1s \
-      postgres:9.4`)
+      postgres:13.2`)
 
     const portMapping = execSync(`docker port ${containerName} 5432`).toString()
     const port = parseInt(portMapping.split(":")[1], 10)

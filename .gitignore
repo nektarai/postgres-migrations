@@ -2,3 +2,5 @@ node_modules
 *.log
 test-reports
 dist/
+.vscode
+.env

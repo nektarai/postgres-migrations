@@ -59,6 +59,11 @@ export type Config = Partial<FullConfig>
 
 export interface FullConfig {
   readonly logger: Logger
+  /**
+   * The default migrations table.
+   * @default migrations
+   */
+  readonly migrationTableName: string
 }
 
 export class MigrationError extends Error {

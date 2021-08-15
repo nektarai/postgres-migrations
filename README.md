@@ -1,9 +1,7 @@
 # Postgres migrations
 
-![GitHub Actions](https://github.com/ThomWright/postgres-migrations/actions/workflows/node.js.yml/badge.svg)
-[![npm](https://img.shields.io/npm/v/postgres-migrations.svg)](https://www.npmjs.com/package/postgres-migrations)
-[![David](https://img.shields.io/david/ThomWright/postgres-migrations.svg)](https://david-dm.org/ThomWright/postgres-migrations)
-[![David](https://img.shields.io/david/dev/ThomWright/postgres-migrations.svg)](https://david-dm.org/ThomWright/postgres-migrations)
+![GitHub Actions](https://github.com/nektarai/postgres-migrations/actions/workflows/node.js.yml/badge.svg)
+[![npm](https://img.shields.io/npm/v/@nektarai/postgres-migrations.svg)](https://www.npmjs.com/package/@nektarai/postgres-migrations)
 
 A PostgreSQL migration library inspired by the Stack Overflow system described in [Nick Craver's blog](http://nickcraver.com/blog/2016/05/03/stack-overflow-how-we-do-deployment-2016-edition/#database-migrations).
 
@@ -68,7 +66,7 @@ async function() {
   const client = new pg.Client(dbConfig) // or a Pool, or a PoolClient
   await client.connect()
   try {
-    await migrate({client}, "path/to/migration/files")
+    await migrate({client}, "path/to/migration/files", { migrationTableName: "my_schema.migrations" })
   } finally {
     await client.end()
   }
